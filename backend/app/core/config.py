@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 from pathlib import Path
@@ -67,6 +67,15 @@ class Settings(BaseSettings):
         case_sensitive=True,
         extra="ignore"
     )
+    
+    @model_validator(mode="after")
+    def strip_api_keys(self) -> "Settings":
+        """Remove espaços e quebras de linha de API keys (evita erros de header HTTP)."""
+        for field in ["GROQ_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "SECRET_KEY"]:
+            value = getattr(self, field, None)
+            if value and isinstance(value, str):
+                object.__setattr__(self, field, value.strip())
+        return self
     
     def __repr__(self) -> str:
         """Representação segura que não expõe secrets."""
