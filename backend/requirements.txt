@@ -1,0 +1,48 @@
+# FastAPI
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Database
+sqlalchemy[asyncio]
+asyncpg
+alembic
+psycopg2-binary
+
+# Pydantic
+pydantic>=2.0
+pydantic-settings
+pydantic[email]
+
+# Authentication & Security
+passlib[bcrypt]
+pyjwt[crypto]
+python-dotenv
+
+# LangChain & LangGraph
+langchain
+langchain-openai
+langchain-anthropic
+langchain-google-genai
+langchain-groq
+langchain-ollama
+langchain-community
+langchain-core
+langgraph
+langsmith
+
+# RAG & Embeddings
+PyPDF2
+sentence-transformers
+fpdf2
+
+# Google Calendar
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+
+# Utilities
+httpx
+python-dateutil
+pytz
