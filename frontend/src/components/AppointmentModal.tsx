@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useClients } from "../hooks/useClients";
 
-interface Client {
-  id: string;
-  first_name: string;
-  last_name: string;
-  company_name?: string;
-}
-
 interface AppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,7 +11,7 @@ interface AppointmentModalProps {
 const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose, initialDate, onSave }) => {
   const [loading, setLoading] = useState(false);
   const { data: clients = [], refetch: refetchClients } = useClients();
-  
+
   const [formData, setFormData] = useState({
     client_id: "",
     date: "",
@@ -52,7 +45,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose, in
     try {
       // Combina data e hora para criar o ISO string
       const scheduledAt = new Date(`${formData.date}T${formData.time}:00`);
-      
+
       await onSave({
         client_id: formData.client_id,
         scheduled_at: scheduledAt.toISOString(),
@@ -80,15 +73,15 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose, in
             ✕
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cliente</label>
-            <select 
+            <select
               required
               className="w-full rounded-lg border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               value={formData.client_id}
-              onChange={e => setFormData({...formData, client_id: e.target.value})}
+              onChange={e => setFormData({ ...formData, client_id: e.target.value })}
             >
               <option value="">Selecione um cliente...</option>
               {clients.map(client => (
@@ -102,22 +95,22 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose, in
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Data</label>
-              <input 
+              <input
                 type="date"
                 required
                 className="w-full rounded-lg border-slate-200 text-sm"
                 value={formData.date}
-                onChange={e => setFormData({...formData, date: e.target.value})}
+                onChange={e => setFormData({ ...formData, date: e.target.value })}
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Hora</label>
-              <input 
+              <input
                 type="time"
                 required
                 className="w-full rounded-lg border-slate-200 text-sm"
                 value={formData.time}
-                onChange={e => setFormData({...formData, time: e.target.value})}
+                onChange={e => setFormData({ ...formData, time: e.target.value })}
               />
             </div>
           </div>
@@ -125,10 +118,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose, in
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Duração (min)</label>
-              <select 
+              <select
                 className="w-full rounded-lg border-slate-200 text-sm"
                 value={formData.duration_minutes}
-                onChange={e => setFormData({...formData, duration_minutes: Number(e.target.value)})}
+                onChange={e => setFormData({ ...formData, duration_minutes: Number(e.target.value) })}
               >
                 <option value={30}>30 min</option>
                 <option value={45}>45 min</option>
@@ -138,36 +131,36 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose, in
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo</label>
-              <input 
+              <input
                 type="text"
                 className="w-full rounded-lg border-slate-200 text-sm"
                 value={formData.meeting_type}
-                onChange={e => setFormData({...formData, meeting_type: e.target.value})}
+                onChange={e => setFormData({ ...formData, meeting_type: e.target.value })}
               />
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Observações</label>
-            <textarea 
+            <textarea
               rows={3}
               className="w-full rounded-lg border-slate-200 text-sm"
               value={formData.notes}
-              onChange={e => setFormData({...formData, notes: e.target.value})}
+              onChange={e => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Detalhes sobre a reunião..."
             />
           </div>
 
           <div className="pt-4 flex gap-3">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onClose}
               className="flex-1 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-medium hover:bg-slate-50 transition-colors"
             >
               Cancelar
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 disabled:opacity-70 flex items-center justify-center gap-2"
             >
