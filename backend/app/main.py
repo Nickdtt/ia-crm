@@ -62,6 +62,45 @@ async def health_check():
     }
 
 
+@app.get("/debug/groq")
+async def debug_groq():
+    """Debug: testa conexão com Groq API"""
+    import httpx
+    import socket
+    
+    results = {}
+    
+    # Teste 1: DNS
+    try:
+        ip = socket.getaddrinfo("api.groq.com", 443)
+        results["dns"] = f"OK - {ip[0][4][0]}"
+    except Exception as e:
+        results["dns"] = f"ERRO - {e}"
+    
+    # Teste 2: HTTPS direto
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get("https://api.groq.com")
+            results["https"] = f"OK - status {resp.status_code}"
+    except Exception as e:
+        results["https"] = f"ERRO - {type(e).__name__}: {e}"
+    
+    # Teste 3: Groq API
+    try:
+        from app.core.config import settings
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {settings.GROQ_API_KEY}"},
+                json={"model": settings.DEFAULT_MODEL, "messages": [{"role": "user", "content": "oi"}], "max_tokens": 5}
+            )
+            results["groq_api"] = f"OK - status {resp.status_code}"
+    except Exception as e:
+        results["groq_api"] = f"ERRO - {type(e).__name__}: {e}"
+    
+    return results
+
+
 # Importar routers
 
 

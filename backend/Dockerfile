@@ -2,10 +2,12 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Instalar dependências de sistema
+# Instalar dependências de sistema (gcc para compilação, ca-certificates para SSL/HTTPS)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
 
 # Instalar PyTorch CPU-only ANTES dos requirements (evita puxar CUDA ~3GB)
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
