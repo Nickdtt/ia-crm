@@ -26,6 +26,7 @@ app = FastAPI(
 cors_origins = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "https://ia-crm-atenteai.netlify.app",
 ]
 
 # Adicionar origens extras de produção via variável de ambiente
