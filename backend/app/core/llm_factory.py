@@ -69,7 +69,9 @@ def get_llm() -> BaseChatModel:
         return ChatGroq(
             model=settings.DEFAULT_MODEL,
             temperature=settings.TEMPERATURE,
-            groq_api_key=settings.GROQ_API_KEY
+            groq_api_key=settings.GROQ_API_KEY,
+            max_retries=3,
+            timeout=30,
         )
     
     # 🦙 OLLAMA - Local, privado, sem custo de API
