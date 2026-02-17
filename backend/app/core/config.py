@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     
     # LLM Configuration
     DEFAULT_LLM_PROVIDER: str = "groq"  # Options: "groq", "ollama", "openai", "anthropic"
-    DEFAULT_MODEL: str = "llama-3.3-70b-versatile"
+    DEFAULT_MODEL: str = "meta-llama/llama-4-scout-17b-16e-instruct"
     TEMPERATURE: float = 0.7
     
     # Ollama Configuration (usado quando DEFAULT_LLM_PROVIDER = "ollama")
