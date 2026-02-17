@@ -56,7 +56,7 @@ Sistema completo de CRM com agendamento inteligente, dashboard administrativo re
 
 ### 1. Clone e configure
 ```bash
-git clone https://github.com/SEU_USUARIO/ia-crm.git
+git clone https://github.com/Nickdtt/ia-crm.git
 cd ia-crm
 cp .env.example .env
 # Edite .env com suas credenciais
