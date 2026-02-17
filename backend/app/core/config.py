@@ -5,6 +5,8 @@ from pathlib import Path
 
 # Caminho para o .env na raiz do projeto (um nível acima de backend)
 ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
+# Em produção (Railway/Render) o .env não existe — as variáveis vêm do sistema
+ENV_FILE_PATH = str(ENV_FILE) if ENV_FILE.exists() else None
 
 
 class Settings(BaseSettings):
@@ -60,7 +62,7 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = "llama3.1:8b"  # Exemplos: llama3.1:8b, mistral, phi3, qwen2.5
     
     model_config = SettingsConfigDict(
-        env_file=str(ENV_FILE),
+        env_file=ENV_FILE_PATH,
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"

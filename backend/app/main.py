@@ -3,6 +3,7 @@ Marketing CRM - Sistema de Agendamento com IA
 Entry point da aplicação FastAPI
 """
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -21,15 +22,23 @@ app = FastAPI(
 )
 
 # Configurar CORS (permitir frontend acessar o backend)
+# Em produção, defina CORS_ORIGINS com a URL do frontend (ex: https://ia-crm-atenteai.netlify.app)
+cors_origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
+
+# Adicionar origens extras de produção via variável de ambiente
+extra_origins = os.environ.get("CORS_ORIGINS", "")
+if extra_origins:
+    cors_origins.extend([o.strip() for o in extra_origins.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Frontend Next.js
-        "http://localhost:5173",  # Frontend Vite
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Permitir todos os métodos (GET, POST, etc)
-    allow_headers=["*"],  # Permitir todos os headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
