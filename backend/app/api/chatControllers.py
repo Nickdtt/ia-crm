@@ -116,7 +116,7 @@ async def send_message(request: ChatMessageRequest):
             try:
                 result = await wait_for(
                     marketing_crm_graph.ainvoke(current_state),
-                    timeout=30.0
+                    timeout=60.0
                 )
             except TimeoutError:
                 print(f"⏱️ Timeout ao processar mensagem (session={session_id})")
