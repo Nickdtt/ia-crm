@@ -52,8 +52,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # LLM Configuration
-    DEFAULT_LLM_PROVIDER: str = "groq"  # Options: "groq", "ollama", "openai", "anthropic"
-    DEFAULT_MODEL: str = "llama-3.3-70b-versatile"
+    DEFAULT_LLM_PROVIDER: str = "openai"  # Options: "groq", "ollama", "openai", "anthropic"
+    DEFAULT_MODEL: str = "gpt-4o-mini"
     TEMPERATURE: float = 0.7
     
     # CORS
