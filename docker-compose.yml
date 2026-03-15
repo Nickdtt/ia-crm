@@ -1,0 +1,174 @@
+# ============================================
+# ia_crm — Docker Compose de Produção
+# ============================================
+# Serviços: Traefik (reverse proxy + SSL), Backend (FastAPI),
+#           Frontend (Vite React + nginx), Evolution API (WhatsApp)
+# Banco: Supabase (externo, via DATABASE_URL)
+# ============================================
+
+services:
+
+  # ── Traefik — Reverse Proxy + SSL automático ──
+  traefik:
+    image: traefik:v3.2
+    container_name: traefik
+    restart: always
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirecionar HTTP → HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Let's Encrypt
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - ineua_network
+    labels:
+      # Dashboard do Traefik (opcional, protegido por basicauth)
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.ineua.com.br`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  # ── Backend — FastAPI + LangGraph Agent ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: always
+    ports:
+      - "8000:8000"  # Acesso temporário direto (remover quando DNS propagar)
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
+      - EVOLUTION_API_URL=http://evolution-api:8080
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER}
+      - DEFAULT_MODEL=${DEFAULT_MODEL}
+      - TEMPERATURE=${TEMPERATURE}
+      - DEBUG=false
+    networks:
+      - ineua_network
+    depends_on:
+      - evolution-api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.ineua.com.br`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+
+  # ── Frontend — Vite React (nginx) ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://api.ineua.com.br
+    container_name: frontend
+    restart: always
+    ports:
+      - "3000:80"  # Acesso temporário direto (remover quando DNS propagar)
+    networks:
+      - ineua_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`app.ineua.com.br`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+  # ── Evolution API — WhatsApp Gateway ──
+  evolution-api:
+    image: evoapicloud/evolution-api:latest
+    container_name: evolution-api
+    restart: always
+    ports:
+      - "8080:8080"  # Acesso temporário direto (remover quando DNS propagar)
+    environment:
+      - SERVER_URL=http://187.77.233.237:8080
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      # Webhook para o backend (rede interna Docker)
+      - WEBHOOK_GLOBAL_URL=http://backend:8000/webhook/whatsapp
+      - WEBHOOK_GLOBAL_ENABLED=true
+      - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false
+      # Banco dedicado da Evolution (container evo-postgres)
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://evolution:evolution@evo-postgres:5432/evolution
+      - DATABASE_CONNECTION_CLIENT_NAME=evolution_api
+      # Redis (cache de sessões)
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://evo-redis:6379/0
+      - CACHE_REDIS_PREFIX_KEY=evolution
+      - CACHE_LOCAL_ENABLED=false
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - ineua_network
+    depends_on:
+      - evo-postgres
+      - evo-redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evolution.rule=Host(`evo.ineua.com.br`)"
+      - "traefik.http.routers.evolution.entrypoints=websecure"
+      - "traefik.http.routers.evolution.tls.certresolver=letsencrypt"
+      - "traefik.http.services.evolution.loadbalancer.server.port=8080"
+
+  # ── PostgreSQL dedicado para Evolution API ──
+  evo-postgres:
+    image: postgres:15-alpine
+    container_name: evo-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=evolution
+      - POSTGRES_PASSWORD=evolution
+      - POSTGRES_DB=evolution
+    volumes:
+      - evo_postgres_data:/var/lib/postgresql/data
+    networks:
+      - ineua_network
+
+  # ── Redis para Evolution API ──
+  evo-redis:
+    image: redis:7-alpine
+    container_name: evo-redis
+    restart: always
+    volumes:
+      - evo_redis_data:/data
+    networks:
+      - ineua_network
+
+volumes:
+  traefik_letsencrypt:
+  evolution_instances:
+  evo_postgres_data:
+  evo_redis_data:
+
+networks:
+  ineua_network:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+        - subnet: fd00:dead:beef::/48

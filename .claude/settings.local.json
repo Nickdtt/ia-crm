@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source venv/bin/activate)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import pydantic_ai; print\\(''pydantic_ai OK'', pydantic_ai.__version__\\)\")"
+    ]
+  }
+}

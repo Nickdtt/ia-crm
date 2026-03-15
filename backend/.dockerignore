@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+tests/
+simulate_*.py
+check_models.py
+create_admin.py
+.env
+.env.*
+*.md

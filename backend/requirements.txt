@@ -1,0 +1,37 @@
+# FastAPI
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Database
+sqlalchemy[asyncio]
+asyncpg
+alembic
+psycopg2-binary
+
+# Pydantic
+pydantic>=2.0
+pydantic-settings
+pydantic[email]  # Para EmailStr validation
+
+# Authentication & Security
+passlib[bcrypt]  # Hash de senhas
+pyjwt[crypto]  # JWT tokens
+
+# AI Agent
+pydantic-ai[openai]
+
+# Google Calendar
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+
+# Security
+python-jose[cryptography]
+python-dotenv
+
+# Utilities
+httpx
+python-dateutil
+pytz
