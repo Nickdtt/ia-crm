@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 
 from app.agent.deps import ConversationDeps
+from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.models.appointment import Appointment, AppointmentStatus
 from app.schemas.appointmentSchema import AppointmentCreate
@@ -177,8 +178,10 @@ class ClienteData(BaseModel):
 
 
 # ── Agente ────────────────────────────────────────────────────────────────────
+_model_string = f"{settings.DEFAULT_LLM_PROVIDER}:{settings.DEFAULT_MODEL}"
+
 crm_agent = Agent(
-    "openai:gpt-4o-mini",
+    _model_string,
     deps_type=ConversationDeps,
     system_prompt=SYSTEM_PROMPT,
     defer_model_check=True,
